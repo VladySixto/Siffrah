@@ -30,21 +30,21 @@ def verificar_credenciales(username, password):
         return result is not None
     return False
 
-# Interfaz de Streamlit
-def main():
-    st.title("Inicio de sesión")
+    # Interfaz de Streamlit
+    def main():
+        st.title("Inicio de sesión")
 
-    username = st.text_input("Nombre de usuario")
-    password = st.text_input("Contraseña", type="password")
+        username = st.text_input("Nombre de usuario")
+        password = st.text_input("Contraseña", type="password")
 
-    if st.button("Iniciar sesión"):
-        if username and password:
-            if verificar_credenciales(username, password):
-                st.success(f"Bienvenido, {username}!")
+        if st.button("Iniciar sesión"):
+            if username and password:
+                if verificar_credenciales(username, password):
+                    st.success(f"Bienvenido, {username}!")
+                else:
+                    st.error("Usuario o contraseña incorrectos")
             else:
-                st.error("Usuario o contraseña incorrectos")
-        else:
-            st.warning("Por favor, complete ambos campos")
+                st.warning("Por favor, complete ambos campos")
 
-if __name__ == "__main__":
-    main()
+    if __name__ == "__main__":
+        main()
