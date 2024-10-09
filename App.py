@@ -14,7 +14,7 @@ def create_connection():
         if connection.is_connected():
             return connection
     except Error as e:
-        st.error(f"Error al conectarse a la base de datos: {e}")
+        st.error(f"¡Error al conectarse a la base de datos: {e}!")
         return None
 
 # Función para verificar las credenciales
