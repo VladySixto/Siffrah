@@ -21,7 +21,6 @@ class Producto:
         self.cursor.execute('SELECT * FROM productos')
         result = self.cursor.fetchall()
         return result   
-         
     def crearProd(self,nombre,precioEfectivo,precioLista,stock):
         self.cursor.execute("SELECT * FROM productos")
         list_prod = self.cursor.fetchall()
