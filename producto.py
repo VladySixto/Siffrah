@@ -53,7 +53,14 @@ class Producto:
         
     def eliminarProducto(self, id):
         self.cursor.execute('DELETE FROM productos WHERE idproductos = %s',(id,))
-        self.connection.commit() 
+        self.connection.commit()
+    def bajarStock(self, id, cantidad):
+        self.cursor.execute('UPDATE productos SET stock_producto = stock_producto - %s WHERE idproductos = %s',(cantidad, id))
+        self.connection.commit()
+    def obtenerID(self,nombre):
+        self.cursor.execute("SELECT idproductos FROM productos WHERE nombre_producto = %s" ,(nombre,))
+        id = self.cursor.fetchall()
+        return id
         
 class DataManagerProducto:
     def __init__(self) -> None:
