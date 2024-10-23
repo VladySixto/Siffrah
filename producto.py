@@ -10,10 +10,10 @@ load_dotenv()
 class Producto:
     def __init__(self):
         self.connection = mysql.connector.connect(
-            host = os.getenv('DB_HOST'),
-            user = os.getenv('DB_USER'),
-            password = os.getenv('DB_PASSWORD'),
-            database = os.getenv('DB_NAME')
+            host = os.getenv('DB_HOST_S'),
+            user = os.getenv('DB_USER_S'),
+            password = os.getenv('DB_PASSWORD_S'),
+            database = os.getenv('DB_NAME_S')
         )
         self.cursor = self.connection.cursor(dictionary=True)
         

@@ -11,10 +11,10 @@ load_dotenv()
 class Venta:
     def __init__(self):
         self.connection = mysql.connector.connect(
-            host = os.getenv('DB_HOST'),
-            user = os.getenv('DB_USER'),
-            password = os.getenv('DB_PASSWORD'),
-            database = os.getenv('DB_NAME')
+            host = os.getenv('DB_HOST_S'),
+            user = os.getenv('DB_USER_S'),
+            password = os.getenv('DB_PASSWORD_S'),
+            database = os.getenv('DB_NAME_S')
         )
         self.cursor = self.connection.cursor(dictionary=True)
 
@@ -22,8 +22,8 @@ class Venta:
 if "df_productos" not in st.session_state:
     st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])      
 if "totales" not in st.session_state:
-    st.session_state["totales"] = pd.DataFrame([[0, 0]], columns=["TOTAL EFECTIVO", "TOTAL LISTA"])      
-     
+    st.session_state["totales"] = pd.DataFrame([[0, 0]], columns=["TOTAL EFECTIVO", "TOTAL LISTA"])
+
 class DataManagerVenta:
     def __init__(self) -> None:
         self.db_venta = Venta()
@@ -36,6 +36,7 @@ class DataManagerVenta:
             # aca se carga el nuevo producto a la lista de venta
             nueva_fila = pd.DataFrame([st.session_state.nueva_fila])
             st.session_state.df_productos = pd.concat([st.session_state.df_productos, nueva_fila], ignore_index=True)
+            
             st.session_state.nueva_fila = None
             # aca sumamos los precios crear el dataframe con los totales
             totales = nueva_fila.to_numpy()
@@ -61,7 +62,9 @@ class DataManagerVenta:
                 self.vender(df_prod)
                 st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
                 st.rerun()      
-         
+        st.write(sum(st.session_state.df_productos['Total Efectivo']))
+        st.write(sum(st.session_state.df_productos['Total Lista']))
+        
     @st.dialog("Cargar Producto")    # con esta funcion se cargan productos al dataframe df_productos
     def cargar_prod(self):
         productos = Producto()
@@ -105,7 +108,7 @@ class DataManagerVenta:
                 df = df.drop(indice)
                 st.session_state.df_productos = df
                 st.rerun()     
-            if indice !=0 :
+            if indice !=0 : 
                 totalEf=(df.iloc[0, 4])
                 totalList=(df.iloc[0, 5])
                 st.session_state["totales"].loc[0, "TOTAL EFECTIVO"] -= totalEf
@@ -113,6 +116,9 @@ class DataManagerVenta:
                 df = df.drop(indice)
                 st.session_state.df_productos = df
                 st.rerun()
+            
+
+            
             st.rerun()
             
                 
