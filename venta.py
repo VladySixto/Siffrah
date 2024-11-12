@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import time
 from producto import DataManagerProducto , Producto
+from cliente import Cliente
 
 load_dotenv()
 
@@ -56,15 +57,21 @@ class DataManagerVenta:
         with col3:
             if st.button("Venta efectivo"):
                 df_prod=st.session_state.df_productos
-                self.vender(df_prod)
+                self.vender(df_prod,type="efectivo")
                 st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
                 st.rerun() 
         with col4:
-            if st.button("Venta lista"):
-                st.write("asd")
+            if st.button("Venta de lista"):
+                df_prod=st.session_state.df_productos
+                self.vender(df_prod,type="lista")
+                st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
+                st.rerun() 
         with col5:
             if st.button("Venta a cuenta"):
-                st.write("asd")
+                df_prod=st.session_state.df_productos
+                self.vender(df_prod,type="cuenta")
+                st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
+                st.rerun() 
                   
          
     @st.dialog("Cargar Producto")    # con esta funcion se cargan productos al dataframe df_productos
@@ -122,11 +129,29 @@ class DataManagerVenta:
             
                 
     def vender(self,df):
-        df = df.to_numpy()
-        nombre_prod = df[:, [0,3]]
-        producto = Producto()
-        for nombre , cantidad in nombre_prod:
-            id=(producto.obtenerID(nombre))
-            id= id[0]["idproductos"]
-            producto.bajarStock(id,cantidad)
+        if type == "efectivo":
+            df = df.to_numpy()
+            nombre_prod = df[:, [0,3]]
+            producto = Producto()
+            for nombre , cantidad in nombre_prod:
+                id=(producto.obtenerID(nombre))
+                id= id[0]["idproductos"]
+                producto.bajarStock(id,cantidad)
+        elif type == "lista":
+            df = df.to_numpy()
+            nombre_prod = df[:, [0,3]]
+            producto = Producto()
+            for nombre , cantidad in nombre_prod:
+                id=(producto.obtenerID(nombre))
+                id= id[0]["idproductos"]
+                producto.bajarStock(id,cantidad)
+        elif type == "cuenta":
+            df = df.to_numpy()
+            nombre_prod = df[:, [0,3]]
+            producto = Producto()
+            for nombre , cantidad in nombre_prod:
+                id=(producto.obtenerID(nombre))
+                id= id[0]["idproductos"]
+                producto.bajarStock(id,cantidad)
+            
         
