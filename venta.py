@@ -17,8 +17,7 @@ class Venta:
             database = os.getenv('DB_NAME')
         )
         self.cursor = self.connection.cursor(dictionary=True)
-
-
+        
 if "df_productos" not in st.session_state:
     st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])      
 if "totales" not in st.session_state:
@@ -37,17 +36,16 @@ class DataManagerVenta:
             nueva_fila = pd.DataFrame([st.session_state.nueva_fila])
             st.session_state.df_productos = pd.concat([st.session_state.df_productos, nueva_fila], ignore_index=True)
             st.session_state.nueva_fila = None
-            # aca sumamos los precios crear el dataframe con los totales
-            totales = nueva_fila.to_numpy()
-            totalEf = totales[0,4]
-            totalList = totales[0,5]
-            st.session_state["totales"].loc[0, "TOTAL EFECTIVO"] += totalEf
-            st.session_state["totales"].loc[0, "TOTAL LISTA"] += totalList
-        st.write(st.session_state.df_productos) #se muestra en pantalla la lista de venta
+            
+        #se muestra en pantalla la lista de venta
+        st.write(st.session_state.df_productos) 
         
-        st.write(st.session_state["totales"]) # esto muestra los totales de los productos en la lista de venta
+        # esto muestra los totales de los productos en la lista de venta
+        st.session_state["totales"].loc[0, "TOTAL LISTA"] = st.session_state.df_productos["Total Lista"].sum()
+        st.session_state["totales"].loc[0, "TOTAL EFECTIVO"] = st.session_state.df_productos["Total Efectivo"].sum()
+        st.write(st.session_state["totales"]) 
         
-        col1,col2,col3,col4 =st.columns([1, 1, 1, 1])
+        col1,col2,col3,col4,col5 =st.columns([1, 1, 1, 1, 1])
         with col1:
             if st.button("Cargar producto"):
                 self.cargar_prod()
@@ -56,11 +54,18 @@ class DataManagerVenta:
                 df_prod=st.session_state.df_productos
                 self.borrar_prod(df_prod)
         with col3:
-            if st.button("Vender"):
+            if st.button("Venta efectivo"):
                 df_prod=st.session_state.df_productos
                 self.vender(df_prod)
                 st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
-                st.rerun()      
+                st.rerun() 
+        with col4:
+            if st.button("Venta lista"):
+                st.write("asd")
+        with col5:
+            if st.button("Venta a cuenta"):
+                st.write("asd")
+                  
          
     @st.dialog("Cargar Producto")    # con esta funcion se cargan productos al dataframe df_productos
     def cargar_prod(self):
@@ -125,6 +130,3 @@ class DataManagerVenta:
             id= id[0]["idproductos"]
             producto.bajarStock(id,cantidad)
         
-
-       
-       
