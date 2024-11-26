@@ -1,4 +1,4 @@
 import streamlit as st 
 
 st.title("Inicio/Registro de usuario")
-st.image("logo.png", with_)
+st.image("logo.png")
