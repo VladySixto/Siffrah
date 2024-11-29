@@ -3,7 +3,11 @@ import streamlit as st
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet
 import os
-import pandas as pd
+from cliente import DataManagerCliente 
+from producto import DataManagerProducto
+from venta import DataManagerVenta
+from index import cargar_sidebar  # Importa la función desde Index.py
+
 
 load_dotenv()
 
@@ -14,6 +18,10 @@ def cargar_clave():
 # Cargar la clave y crear la instancia de Fernet
 clave = cargar_clave()
 cipher_suite = Fernet(clave)
+
+if 'encontrado'not in st.session_state:
+    st.session_state.encontrado = False
+
 
 class Usuario:
     def __init__(self):
@@ -73,10 +81,9 @@ class Usuario:
             if db_name == name and db_password == password:
                 st.success("Se inició sesión correctamente")
                 encontrado = True
+                st.session_state.encontrado = True  # Actualiza la bandera para cargar el sidebar
+                st.session_state.usuario_actual = name  # Guarda el usuario logueado
                 break
-
-        if not encontrado:
-            st.warning("El usuario y/o contraseña no se encuentran registrados")
 
 # Interfaz de Streamlit
 def displayRegistro():
@@ -104,15 +111,17 @@ def displayInicioSesion():
         usuario = Usuario()
         usuario.iniciar_sesion(username, password)
 
+
 # Menú principal
 def main():
-    st.sidebar.title("Menú")
-    menu = st.sidebar.selectbox("Selecciona una opción", ["Registro", "Inicio de Sesión"])
-
-    if menu == "Registro":
-        displayRegistro()
-    elif menu == "Inicio de Sesión":
-        displayInicioSesion()
+    if st.session_state.get("encontrado", False):
+        cargar_sidebar()  # Cargar sidebar desde Index.py si el usuario está logueado
+    else:
+        menu = st.sidebar.selectbox("Selecciona una opción", ["Registro", "Inicio de Sesión"])
+        if menu == "Registro":
+            displayRegistro()
+        elif menu == "Inicio de Sesión":
+            displayInicioSesion()
 
 if __name__ == "__main__":
     main()

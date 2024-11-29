@@ -5,48 +5,33 @@ from cliente import DataManagerCliente
 from producto import DataManagerProducto
 from venta import DataManagerVenta
 
-def main():
-    if "page" not in st.session_state:
-        st.session_state.page = "index"
+def cargar_sidebar():
+    st.sidebar.title("Menú Principal")
+    opciones = st.sidebar.radio("Selecciona una opción", ["Inicio", "Clientes", "Productos", "Ventas", "Cerrar Sesión"])
 
-    st.sidebar.title("Menu de opciones")
-    if st.sidebar.button("inicio"):
-        st.session_state.page = 'index'
-    if st.sidebar.button("Iniciar sesión"):
-        st.session_state.page = 'inicio_sesion'
-    if st.sidebar.button("Registrar usuario"):
-        st.session_state.page = 'registro_usuario'
-    if st.sidebar.button("Clientes"):
-        st.session_state.page = 'Clientes'
-    if st.sidebar.button("Productos"):
-        st.session_state.page = 'Productos'
-    if st.sidebar.button("Venta"):
-        st.session_state.page = 'Venta'
+    if opciones == "Inicio":
+        st.title("Bienvenido a Siffrah")
+        st.write(f"Usuario logueado: {st.session_state.get('usuario_actual', 'Desconocido')}")
 
+    elif opciones == "Clientes":
+        st.title("Gestión de Clientes")
+        cliente_manager = DataManagerCliente()
+        cliente_manager.displayClientes()
 
-    if st.session_state.page =="index":
-        st.title("Siffrah")
-        st.header('Sistema de control de stock')
+    elif opciones == "Productos":
+        st.title("Gestión de Productos")
+        producto_manager = DataManagerProducto()
+        producto_manager.displayProductos()
 
-    if st.session_state.page == 'registro_usuario':
-        usuario.displayRegistro()
-    
-    if st.session_state.page == 'inicio_sesion':
-        usuario.displayInicioSesion()
-        
-    if st.session_state.page == "Clientes":
-        objeto = DataManagerCliente()
-        objeto.displayClientes()
-        
-    if st.session_state.page == "Productos":
-        objeto = DataManagerProducto()
-        objeto.displayProductos()
-    
-    if st.session_state.page == 'Venta':
-        objeto = DataManagerVenta()
-        objeto.displayVenta()
-    
-     
-        
+    elif opciones == "Ventas":
+        st.title("Gestión de Ventas")
+        venta_manager = DataManagerVenta()
+        venta_manager.displayVenta()
+
+    elif opciones == "Cerrar Sesión":
+        st.session_state.encontrado = False
+        st.session_state.usuario_actual = None
+        st.success("Has cerrado sesión")
+
 if __name__ == "__main__":
-    main()
+    cargar_sidebar()
