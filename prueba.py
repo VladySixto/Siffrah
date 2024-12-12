@@ -115,7 +115,7 @@ def displayInicioSesion():
 # Menú principal
 def main():
     if st.session_state.get("encontrado", False):
-        cargar_sidebar()  # Cargar sidebar desde Index.py si el usuario está logueado
+        cargar_sidebar()# Cargar sidebar desde Index.py si el usuario está logueado
     else:
         menu = st.sidebar.selectbox("Selecciona una opción", ["Registro", "Inicio de Sesión"])
         if menu == "Registro":

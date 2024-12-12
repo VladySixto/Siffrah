@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 import time
-
+###Carga las variables de la base de datos
 load_dotenv()
-
+###Define clase prodcto, y usa las variables de .env (OS --> sistema local)
 class Producto:
     def __init__(self):
         self.connection = mysql.connector.connect(
@@ -16,12 +16,12 @@ class Producto:
             database = os.getenv('DB_NAME')
         )
         self.cursor = self.connection.cursor(dictionary=True)
-        
+    ###Esta funcion recorre todos los resultados que encuentre en la base de datos y las muestra (cursor.fetchall)    
     def obtener_dato(self):
         self.cursor.execute('SELECT * FROM productos')
         result = self.cursor.fetchall()
         return result   
-         
+###Misma funcion que se ve en cliente, pero destinada a productos
     def crearProd(self,nombre,precioEfectivo,precioLista,stock):
         self.cursor.execute("SELECT * FROM productos")
         list_prod = self.cursor.fetchall()
@@ -46,7 +46,7 @@ class Producto:
             self.cursor.execute('INSERT INTO productos(idproductos , nombre_producto , precio_lista_producto , precio_efectivo_producto , stock_producto) VALUES(%s,%s,%s,%s,%s)',(id,nombre,precioLista,precioEfectivo,stock))
             self.connection.commit()
             st.success("el producto se creo correctamente")
-
+        #Define actuaizar, a la vez que estan los cambios se guarda con self.connection.COMMIT
     def actualizarProducto(self,id,nombre,precioLista,precioEfectivo,stock):
         self.cursor.execute('UPDATE productos SET nombre_producto = %s , precio_lista_producto = %s , precio_efectivo_producto = %s , stock_producto = %s  WHERE idproductos = %s',(nombre,precioLista,precioEfectivo,stock,id))
         self.connection.commit()
@@ -77,7 +77,7 @@ class DataManagerProducto:
                             height=175 , #determinamos la altura del dataframe
                             selection_mode="single-row", #establecemos el modo de seleccion por filas simple(solo se puede seleccionar una fila a la vez)
                             on_select="rerun")  # cuando se selecciona algun cliente , se refresca la pagina
-        if evento['selection']['rows']:
+        if evento['selection']['rows']:#las rows son las columnas donde se va a ir colocando los datos (0.0-0.1-0.2 son la fila 0. y las columnas .1 - .2, etc)
             filtrado = df_productos[df_productos.index.isin(evento.selection['rows'])]
             valor_id = int(filtrado.iloc[0,0])
             valor_nombre = str(filtrado.iloc[0,1])
@@ -85,11 +85,11 @@ class DataManagerProducto:
             valor_precio_lista = str(filtrado.iloc[0,3])
             valor_stock = str(filtrado.iloc[0,4])
             self.displayModificarProducto(valor_id, valor_nombre,valor_precio_efectivo,valor_precio_lista,valor_stock)    
-                 
+
         if st.button("Cargar nuevo Producto"):
             self.displayCrearProducto()
             
-           
+
     @st.dialog("Cargar nuevo producto")
     def displayCrearProducto(self):
         nombre = st.text_input("nombre del prodcuto")

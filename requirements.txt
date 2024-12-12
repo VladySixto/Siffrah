@@ -10,3 +10,6 @@ reportlab
 mysql-connector-python
 python-dotenv
 matplotlib
+
+
+#aunque no se usen todas, son los frameworks que estan descargados en el caso de usarlos
