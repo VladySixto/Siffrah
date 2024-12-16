@@ -6,6 +6,9 @@ import pandas as pd
 
 load_dotenv()
 
+if "sesionIniciada" not in st.session_state:    
+    st.session_state.sesionIniciada = False
+        
 class Usuario:
     def __init__(self):
         self.connection = mysql.connector.connect(
@@ -49,7 +52,10 @@ class Usuario:
         self.cursor.execute("SELECT * FROM usuario WHERE nombre_usuario = %s AND contraseña = %s",(name,password))
         user = self.cursor.fetchall()
         if user:
-           st.success("se inicio sesion correctamente")
+           st.success("se inicio sesion correctamente")     
+           st.session_state.sesionIniciada = True
+           st.session_state.page = 'index'
+           st.rerun()
         else:
            st.warning("el usuario y/o contraseña no se encuentran registrados")    
         

@@ -6,9 +6,16 @@ import pandas as pd
 import time
 from producto import DataManagerProducto , Producto
 from cliente import Cliente
+from datetime import datetime
+from cuentaCorriente import CuentaCorriente
 
 load_dotenv()
 
+if "df_productos" not in st.session_state:
+    st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])      
+if "totales" not in st.session_state:
+    st.session_state["totales"] = pd.DataFrame([[0, 0]], columns=["TOTAL EFECTIVO", "TOTAL LISTA"])  
+    
 class Venta:
     def __init__(self):
         self.connection = mysql.connector.connect(
@@ -18,11 +25,16 @@ class Venta:
             database = os.getenv('DB_NAME')
         )
         self.cursor = self.connection.cursor(dictionary=True)
-        
-if "df_productos" not in st.session_state:
-    st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])      
-if "totales" not in st.session_state:
-    st.session_state["totales"] = pd.DataFrame([[0, 0]], columns=["TOTAL EFECTIVO", "TOTAL LISTA"])      
+    
+    def obtener_dato(self):
+        self.cursor.execute('SELECT * FROM ventas')
+        result = self.cursor.fetchall()
+        return result   
+    
+    def cargarVenta(self,detalle,total,cobro):
+        self.cursor.execute('INSERT INTO ventas(detalle,total,cobro,fecha) VALUES(%s,%s,%s,CURDATE())',(detalle,total,cobro))
+        self.connection.commit()
+        st.success("la venta se cargo correctamente")
      
 class DataManagerVenta:
     def __init__(self) -> None:
@@ -44,7 +56,7 @@ class DataManagerVenta:
         # esto muestra los totales de los productos en la lista de venta
         st.session_state["totales"].loc[0, "TOTAL LISTA"] = st.session_state.df_productos["Total Lista"].sum()
         st.session_state["totales"].loc[0, "TOTAL EFECTIVO"] = st.session_state.df_productos["Total Efectivo"].sum()
-        st.write(st.session_state["totales"]) 
+        st.write(st.session_state["totales"])
         
         col1,col2,col3,col4,col5 =st.columns([1, 1, 1, 1, 1])
         with col1:
@@ -57,23 +69,41 @@ class DataManagerVenta:
         with col3:
             if st.button("Venta efectivo"):
                 df_prod=st.session_state.df_productos
-                self.vender(df_prod,type="efectivo")
+                cliente= None
+                self.vender(df_prod,cliente,type="efectivo")
                 st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
                 st.rerun() 
         with col4:
             if st.button("Venta de lista"):
                 df_prod=st.session_state.df_productos
-                self.vender(df_prod,type="lista")
+                cliente=None
+                self.vender(df_prod,cliente,type="lista")
                 st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
                 st.rerun() 
         with col5:
             if st.button("Venta a cuenta"):
-                df_prod=st.session_state.df_productos
-                self.vender(df_prod,type="cuenta")
-                st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
-                st.rerun() 
+                st.session_state.cliente = None
+                self.seleccionar_cliente()
+                               
                   
-         
+    @st.dialog("seleccionar cliente")   
+    def seleccionar_cliente(self):
+        clientes = Cliente()
+        clientes = clientes.obtener_dato()
+
+        seleccion = st.selectbox(
+        "clientes:", 
+        [cliente["nombre_cliente"] for cliente in clientes]
+        ) 
+        st.write(f"a seleccionado la cuenta corriente del cliente: {seleccion}")
+        if st.button("seleccionar"):
+            st.session_state.cliente = seleccion
+            if st.session_state.cliente != None:
+                df_prod=st.session_state.df_productos
+                cliente = st.session_state.cliente
+                self.vender(df_prod,cliente,type="cuenta")
+
+           
     @st.dialog("Cargar Producto")    # con esta funcion se cargan productos al dataframe df_productos
     def cargar_prod(self):
         productos = Producto()
@@ -128,30 +158,61 @@ class DataManagerVenta:
             st.rerun()
             
                 
-    def vender(self,df):
-        if type == "efectivo":
-            df = df.to_numpy()
-            nombre_prod = df[:, [0,3]]
-            producto = Producto()
-            for nombre , cantidad in nombre_prod:
-                id=(producto.obtenerID(nombre))
-                id= id[0]["idproductos"]
-                producto.bajarStock(id,cantidad)
-        elif type == "lista":
-            df = df.to_numpy()
-            nombre_prod = df[:, [0,3]]
-            producto = Producto()
-            for nombre , cantidad in nombre_prod:
-                id=(producto.obtenerID(nombre))
-                id= id[0]["idproductos"]
-                producto.bajarStock(id,cantidad)
-        elif type == "cuenta":
-            df = df.to_numpy()
-            nombre_prod = df[:, [0,3]]
-            producto = Producto()
-            for nombre , cantidad in nombre_prod:
-                id=(producto.obtenerID(nombre))
-                id= id[0]["idproductos"]
-                producto.bajarStock(id,cantidad)
+    def vender(self,df,cliente,type):
+        if len(st.session_state.df_productos)>0:
+            if type == "efectivo":
+                df = df.to_numpy()
+                nombre_prod = df[:, [0,3]]
+                producto = Producto()
+                lista = []
+                for nombre , cantidad in nombre_prod:
+                    lista.append(f"{cantidad} {nombre}")
+                    id=(producto.obtenerID(nombre))
+                    id= id[0]["idproductos"]
+                    producto.bajarStock(id,cantidad)
+                detalle = ", ".join(lista)
+                total=st.session_state["totales"].loc[0, "TOTAL EFECTIVO"]
+                venta = Venta()
+                venta.cargarVenta(detalle,total,type)
+            elif type == "lista":
+                df = df.to_numpy()
+                nombre_prod = df[:, [0,3]]
+                producto = Producto()
+                lista = []
+                for nombre , cantidad in nombre_prod:
+                    lista.append(f"{cantidad} {nombre}")
+                    id=(producto.obtenerID(nombre))
+                    id= id[0]["idproductos"]
+                    producto.bajarStock(id,cantidad)
+                detalle = ", ".join(lista)
+                total=st.session_state["totales"].loc[0, "TOTAL LISTA"]
+                venta = Venta()
+                venta.cargarVenta(detalle,total,type)
+            elif type == "cuenta":
+                df = df.to_numpy()
+                nombre_prod = df[:, [0,3]]
+                producto = Producto()
+                lista = []
+                for nombre , cantidad in nombre_prod:
+                    lista.append(f"{cantidad} {nombre}")
+                    id=(producto.obtenerID(nombre))
+                    id= id[0]["idproductos"]
+                    producto.bajarStock(id,cantidad)
+                detalle = ", ".join(lista)
+                clientes = Cliente()
+                idcliente = clientes.obtener_id_por_nombre(cliente)
+                cc = CuentaCorriente()
+                total=st.session_state["totales"].loc[0, "TOTAL LISTA"]
+                cc.cargarVentaCuenta(idcliente,detalle,total)
+                venta = Venta()
+                venta.cargarVenta(detalle,total,type)
+                time.sleep(1)
+                st.session_state.cliente = None
+                st.session_state.df_productos = pd.DataFrame(columns=["Producto","Precio Efectivo","Precio de lista","Cantidad","Total Efectivo","Total Lista"])
+                st.rerun()
+                
+            
+            
+            
             
         

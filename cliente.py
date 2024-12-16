@@ -22,6 +22,11 @@ class Cliente:
         result = self.cursor.fetchall()
         return result
     
+    def obtener_id_por_nombre(self, nombre):
+        self.cursor.execute('SELECT idclientes FROM clientes WHERE nombre_cliente = %s', (nombre,))
+        result = self.cursor.fetchone()
+        return result['idclientes'] 
+
     def crear_cliente(self,name):
         self.cursor.execute('SELECT nombre_cliente FROM clientes')
         list_clientes = self.cursor.fetchall()
