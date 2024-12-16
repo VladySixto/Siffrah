@@ -7,8 +7,6 @@ import time
 
 load_dotenv()
 
-
-###Conecta las variables de .env con la base de datos local
 class Cliente:
     def __init__(self):
         self.connection = mysql.connector.connect(
@@ -18,16 +16,21 @@ class Cliente:
             database = os.getenv('DB_NAME')
         )
         self.cursor = self.connection.cursor(dictionary=True)
-###Funcion para seleccionar y buscar "cliente" en la base de datos, busca mediante cursor
+
     def obtener_dato(self):
         self.cursor.execute('SELECT * FROM clientes')
         result = self.cursor.fetchall()
         return result
-###Funcionar para crear cliente e insertarlo en la base de datos
+    
+    def obtener_id_por_nombre(self, nombre):
+        self.cursor.execute('SELECT idclientes FROM clientes WHERE nombre_cliente = %s', (nombre,))
+        result = self.cursor.fetchone()
+        return result['idclientes'] 
+
     def crear_cliente(self,name):
         self.cursor.execute('SELECT nombre_cliente FROM clientes')
         list_clientes = self.cursor.fetchall()
-###en el caso de que el clinte no este registrado (False) lo registra, si ya esta le tira warning(True)
+        
         if (len(list_clientes)) != 0:
             for i in range(len(list_clientes)):
                 existente = False
@@ -35,7 +38,7 @@ class Cliente:
                     st.warning(f"El cliente {name} ya está registrado en la base de datos")
                     existente = True
                     break
-            ###Inserta id incrementado, nombre y los ordena   
+                
             if existente == False:
                 self.cursor.execute('SELECT * FROM clientes ORDER BY idclientes DESC LIMIT 1')
                 list_clientes = self.cursor.fetchall()
@@ -49,19 +52,19 @@ class Cliente:
             self.cursor.execute('INSERT INTO clientes(idclientes , nombre_cliente) VALUES(%s,%s)',(id,name))
             self.connection.commit()
             st.success("el cliente se creo correctamente")
-    ###Funcion para actualizar cliente
+    
     def actualizarCliente(self,id,name):
         self.cursor.execute('UPDATE clientes SET nombre_cliente = %s WHERE idclientes = %s',(name,id))
         self.connection.commit()
-    ###Funcion para eliminar cliente
+        
     def eliminarCliente(self, id):
         self.cursor.execute('DELETE FROM clientes WHERE idclientes = %s',(id,))
         self.connection.commit()
-    ###DataManager inicia, toma la funcion de las variables dbCliente y las junta con Cliente
+    
 class DataManagerCliente:
     def __init__(self) -> None:
         self.db_cliente = Cliente()
-    ###Funcion para cargar un nuevo cliente, reset con time.sleep en 0.5seg           
+                
     @st.dialog("Cargar nuevo cliente")
     def display_crearCliente(self):
         name = st.text_input("ingrese nombre del cliente")
@@ -69,7 +72,7 @@ class DataManagerCliente:
             self.db_cliente.crear_cliente(name)
             time.sleep(0.5)
             st.rerun()
-    ###Abre un cuadro con la siguiente vista        
+            
     @st.dialog("Modificar/eliminar cliente")
     def display_modificar_cliente(self,id,name):
         nombre_cliente = st.text_input('Ingrese el cliente', value=name)
@@ -93,7 +96,7 @@ class DataManagerCliente:
                     st.success(f"El cliente ha sido {accion_realizada} exitosamente.")
                     time.sleep(0.5)
                     st.rerun()                 
-    
+
     def displayClientes(self):
         st.title("Clientes")
         data_clientes = self.db_cliente.obtener_dato()
