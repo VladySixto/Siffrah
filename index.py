@@ -32,6 +32,9 @@ def main():
             st.session_state.page = 'Cuentas_corrientes'
         if st.sidebar.button("Transacciones"):
             st.session_state.page = 'Transacciones'
+        if st.sidebar.button("Cerrar sesion"):
+            st.session_state.sesionIniciada = False
+            st.rerun()
         
 
 
