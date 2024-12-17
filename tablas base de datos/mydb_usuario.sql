@@ -24,8 +24,8 @@ DROP TABLE IF EXISTS `usuario`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `usuario` (
   `idusuario` int NOT NULL,
-  `nombre_usuario` varchar(45) NOT NULL,
-  `contraseña` varchar(45) NOT NULL,
+  `nombre_usuario` varchar(255) NOT NULL,
+  `contraseña` varchar(255) NOT NULL,
   PRIMARY KEY (`idusuario`),
   UNIQUE KEY `idusuario_UNIQUE` (`idusuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -40,4 +40,4 @@ CREATE TABLE `usuario` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-15 21:23:52
+-- Dump completed on 2024-12-16 23:29:33
